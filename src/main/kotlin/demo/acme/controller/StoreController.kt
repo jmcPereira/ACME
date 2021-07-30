@@ -1,61 +1,80 @@
 package demo.acme.controller
 
 import com.beust.klaxon.Klaxon
-import demo.acme.model.Store
 import demo.acme.StoreRepository
+import demo.acme.component.UpdateStoreInformationSchedule
+import demo.acme.model.Store
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.core.io.FileSystemResource
+import org.springframework.core.io.InputStreamResource
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
+import java.io.File
+import java.io.FileInputStream
 
 
 @RestController
 class StoreController {
     @Autowired
-    private val repository: StoreRepository? = null
-    @GetMapping("/api/getStores")
-    fun getStores(@RequestParam page: Int, @RequestParam(required = false) storeNameFilter: String?) : String {
+    private lateinit var updateStoreInformationSchedule: UpdateStoreInformationSchedule
+
+    @Autowired
+    private lateinit var repository: StoreRepository
+
+    @GetMapping("/api/getStores", produces = [MediaType.APPLICATION_JSON_VALUE])
+    fun getStores(@RequestParam page: Int, @RequestParam(required = false) storeNameFilter: String?): String {
         val pageSize = 20
         val pageRequest = PageRequest.of(page, pageSize, Sort.by("id"))
-        val recordList =
-            if(storeNameFilter == null || storeNameFilter.isEmpty())
-                repository?.findAll(pageRequest)?.toList() ?: listOf()
-            else
-                repository?.findByNameContaining(storeNameFilter, pageRequest) ?: listOf()
-        val storeCount =
-            if(storeNameFilter == null || storeNameFilter.isEmpty())
-                repository?.findAll()?.count() ?: 0
-            else
-                repository?.findAll()?.filterNotNull()?.filter { it.name == storeNameFilter }?.count() ?: 0
-
+        val storesPage = if (storeNameFilter == null || storeNameFilter.isEmpty())
+            repository.findAll(pageRequest)
+        else repository.findByNameContaining(storeNameFilter, pageRequest)
         return Klaxon().toJsonString(
             object {
-                val storesPage = recordList.toList()
-                val totalStores = storeCount
+                val storesPage = storesPage.get().toList()
+                val totalPages = storesPage.totalPages
             })
     }
+
     @PutMapping("/api/updateStore")
-    fun updateStore(@RequestBody store: String) : String {
-        val store = Klaxon().parse<Store>(store)
-        if(store != null && repository != null){
-            var storeToUpdate = repository.findById(store.id).get()
-            if(storeToUpdate != null){
-                storeToUpdate.name = store.name
-                repository.save(storeToUpdate)
-                return "updated";
-            }
+    fun updateStore(@RequestBody storeAsJson: String): String {
+        var store: Store? = null
+        try {
+            store = Klaxon().parse<Store>(storeAsJson)
+        } catch (e: Exception) {
         }
-        throw ResponseStatusException(HttpStatus.NOT_FOUND, "Store ID does not exist!")
+        if (store == null)
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Couldn't match request body to json of Store object")
+        val storeToUpdate = repository.findById(store.id).orElse(null)
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Store ID does not exist!")
+        storeToUpdate.name = store.name
+        repository.saveAndFlush(storeToUpdate)
+        return "updated"
     }
 
-    @RequestMapping(value = ["/api/csv"], method = [RequestMethod.GET], produces = [MediaType.APPLICATION_OCTET_STREAM_VALUE])
+    @RequestMapping(
+        value = ["/api/csv"],
+        method = [RequestMethod.GET],
+        produces = [MediaType.APPLICATION_OCTET_STREAM_VALUE]
+    )
     @ResponseBody
-    fun getFile(@PathVariable("file_name") fileName: String?): FileSystemResource? {
-        //return FileSystemResource(myService.getFileFor(fileName))
-        return null
+    fun getFile(): ResponseEntity<InputStreamResource> {
+        if (updateStoreInformationSchedule.csvFilePath == null) {
+            throw ResponseStatusException(HttpStatus.NOT_FOUND, "Store information unavailable!")
+        }
+        val resource = InputStreamResource(FileInputStream(updateStoreInformationSchedule.csvFilePath))
+
+        return ResponseEntity.ok()
+            .contentLength(File(updateStoreInformationSchedule.csvFilePath).length())
+            .contentType(MediaType.APPLICATION_OCTET_STREAM)
+            .body(resource)
+    }
+
+    @GetMapping("/api/isDataAvailable")
+    fun isDataAvailable(): Boolean {
+        return updateStoreInformationSchedule.csvFilePath != null && repository.count() > 0
     }
 }

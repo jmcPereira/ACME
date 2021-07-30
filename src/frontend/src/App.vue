@@ -2,7 +2,7 @@
   <Stores/>
 </template>
 
-<script>
+<script >
 import Stores from './components/Stores.vue'
 
 export default {

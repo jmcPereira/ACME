@@ -1,56 +1,61 @@
 package demo.acme.component
 
+import demo.acme.StoreRepository
 import demo.acme.model.Season
 import demo.acme.model.Store
-import demo.acme.StoreRepository
 import demo.acme.service.DataFetchService
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
+import org.apache.tomcat.util.http.fileupload.FileUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.io.BufferedWriter
-import java.io.File
 import java.io.FileWriter
+import java.nio.file.Files
+import java.nio.file.Paths
 import kotlin.system.measureTimeMillis
 
 @Component
 class UpdateStoreInformationSchedule {
+
+    var csvFilePath: String? = null
+
     @Autowired
     lateinit var repository: StoreRepository
 
     @Autowired
     lateinit var dataFetchService: DataFetchService
-
     @Scheduled(initialDelay = 0, fixedDelay = 3600000L)
     fun writeCurrentTime() = try {
         val elapsed = measureTimeMillis {
             runBlocking {
-                val stores = async { dataFetchService.fetchStores().distinctBy { it.id } }
+                val stores = async { dataFetchService.fetchStores() }
                 val csv = async { dataFetchService.fetchCSV() }
                 val storesAndSeasons = async { dataFetchService.fetchStoresAndSeasons() }
                 val addSeasons = async {
                     storesAndSeasons.await()?.forEach { storeAndSeason ->
-                        val matchingStore = stores.await().firstOrNull { it.id == storeAndSeason.storeId }
+                        val matchingStore = stores.await()[storeAndSeason.storeId]
                         matchingStore?.seasons?.add(Season().apply { season = storeAndSeason.season })
                     }
                 }
                 val addInfo = async {
                     csv.await()?.forEach { csvInfo ->
-                        val matchingStore = stores.await().firstOrNull { it.id == csvInfo.key }
+                        val matchingStore = stores.await()[csvInfo.key]
                         if (matchingStore != null)
                             matchingStore.additionalInfo = csvInfo.value
                     }
                 }
                 addSeasons.await()
                 addInfo.await()
-                var timeToSaveRecords = measureTimeMillis {
-                    repository.saveAll(stores.await())
+                val timeToSaveRecords = measureTimeMillis {
+                    repository.deleteAll()
+                    repository.saveAllAndFlush(stores.await().values)
                 }
                 println("Saved ${stores.await().size} new Store records in $timeToSaveRecords milliseconds.")
-                exportToCSV(stores.await())
+                exportToCSV(stores.await().values)
             }
         }
         println("Fetched data and updated DB in $elapsed milliseconds.")
@@ -58,9 +63,14 @@ class UpdateStoreInformationSchedule {
         println(e.message)
     }
 
-    fun exportToCSV(stores: List<Store>) = try {
-        var elapsed = measureTimeMillis {
-            val file = File.createTempFile("ACME-data-", ".csv")
+    fun exportToCSV(stores: Collection<Store>) = try {
+        val elapsed = measureTimeMillis {
+            val tempPath = System.getProperty("java.io.tmpdir")
+            val acmeDir = Paths.get(tempPath, "ACME_CSV")
+            if (!Files.exists(acmeDir))
+                Files.createDirectory(acmeDir)
+            FileUtils.cleanDirectory(acmeDir.toFile())
+            val file = Paths.get(acmeDir.toString(), "ACME_data.csv").toFile()
             val writer = BufferedWriter(FileWriter(file))
             CSVPrinter(
                 writer, CSVFormat.DEFAULT
@@ -84,6 +94,7 @@ class UpdateStoreInformationSchedule {
                     )
                 }
             }
+            csvFilePath = file.toString()
         }
         println("Exported database to .csv in $elapsed milliseconds.")
     } catch (e: Exception) {

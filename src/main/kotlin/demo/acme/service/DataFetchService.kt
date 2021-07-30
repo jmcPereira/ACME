@@ -67,8 +67,8 @@ class DataFetchService {
         return result
     }
 
-    fun fetchStores(): List<Store> {
-        val stores = mutableListOf<Store>()
+    fun fetchStores(): Map<Long,Store>{
+        var stores = mutableMapOf<Long, Store>()
         var elapsed = measureTimeMillis {
             var page = 0
             while (page < maximumNumberOfFetchedPages.toInt()) {
@@ -80,7 +80,7 @@ class DataFetchService {
                     }
                     storesBatch = awaitAll(*asyncFetches.toTypedArray()).filterNotNull()
                 }
-                stores.addAll(storesBatch.flatten())
+                stores.putAll(storesBatch.flatten().associateBy { it.id }.toMap())
                 if (storesBatch.any { it.isEmpty() })
                     break
             }

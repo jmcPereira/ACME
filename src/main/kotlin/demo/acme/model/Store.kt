@@ -1,10 +1,11 @@
 package demo.acme.model
 
+import org.hibernate.id.SequenceGenerator.SEQUENCE
 import javax.persistence.*
 
 @Entity
 data class Store(
-    @Id var id:Long,
+    @Id @GeneratedValue(strategy=GenerationType.SEQUENCE) var id:Long,
     var code:String,
     @Column(length = 5000) var description:String,
     var name:String, 
