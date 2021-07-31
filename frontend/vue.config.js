@@ -2,11 +2,12 @@ module.exports = {
     devServer:{
         port : 8080,
         proxy : {
-            '/' : {
-                target: 'http://localhost:3000/',
-                ws: true,
-                changeOrigin: true
-            }
+            '^/api': {
+                target: 'http://backend:3000',
+                changeOrigin: true,
+                secure:false,
+                pathRewrite: {'^/api': '/api'}
+            },
         }
     }
 }

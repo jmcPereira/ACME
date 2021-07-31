@@ -1,6 +1,5 @@
 package demo.acme.model
 
-import org.hibernate.id.SequenceGenerator.SEQUENCE
 import javax.persistence.*
 
 @Entity

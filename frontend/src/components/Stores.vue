@@ -13,7 +13,7 @@
             :pages="numberOfPages"
             :range-size="0"
             active-color="#DCEDFF"
-            @update:modelValue="updateHandler"
+            @update:modelValue="updatePageHandler"
         />
       </div>
       <table v-if="dataIsAvailable" class="table table-striped">
@@ -128,13 +128,12 @@ export default {
       return f && f.length > 0
     },
     hasAdditionalInformation: function (store) {
-
       return store.additionalInfo && (this.isValidField(store.additionalInfo.specialField1) || this.isValidField(store.additionalInfo.specialField2))
     },
     activateReadMore(store) {
       store.readMoreActivated = !store.readMoreActivated;
     },
-    updateHandler: function (page) {
+    updatePageHandler: function (page) {
       this.fetchStoresPage(page)
     },
     fetchStoresPage: function (page) {
@@ -175,7 +174,6 @@ export default {
             const interval = setInterval(function () {
               this.isDataAvailable()
                   .then(isAvailable => {
-                    console.log(isAvailable)
                     if (isAvailable) {
                       this.fetchStoresPage(this.page)
                       clearInterval(interval)

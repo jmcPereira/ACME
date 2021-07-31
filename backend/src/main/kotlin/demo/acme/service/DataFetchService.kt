@@ -41,7 +41,7 @@ class DataFetchService {
 
     fun fetchStoresAndSeasons(): List<StoreAndSeason>? {
         var result: List<StoreAndSeason>?
-        var elapsed = measureTimeMillis {
+        val elapsed = measureTimeMillis {
             result = fetchData("${sourceApiUrl}${storeSeasonEndpoint}") { Klaxon().parseArray(it) }
         }
         println("Fetched ${result?.size} store season entries in $elapsed milliseconds.")
@@ -50,7 +50,7 @@ class DataFetchService {
 
     fun fetchCSV(): Map<Long, CsvEntry>? {
         var result : Map<Long, CsvEntry>?
-        var elapsed = measureTimeMillis {
+        val elapsed = measureTimeMillis {
             result = fetchData("${sourceApiUrl}${extraDataCsv}") {
                 val associate = CSVParser(it, CSVFormat.DEFAULT.withFirstRecordAsHeader().withTrim())
                     .associate { csvRecord ->
@@ -68,8 +68,8 @@ class DataFetchService {
     }
 
     fun fetchStores(): Map<Long,Store>{
-        var stores = mutableMapOf<Long, Store>()
-        var elapsed = measureTimeMillis {
+        val stores = mutableMapOf<Long, Store>()
+        val elapsed = measureTimeMillis {
             var page = 0
             while (page < maximumNumberOfFetchedPages.toInt()) {
                 val asyncFetches = mutableListOf<Deferred<List<Store>?>>()
