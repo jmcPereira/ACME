@@ -4,6 +4,7 @@ import com.beust.klaxon.Klaxon
 import demo.acme.model.Store
 import org.hamcrest.Matchers.containsString
 import org.hamcrest.Matchers.hasSize
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
@@ -27,6 +28,10 @@ class AcmeApplicationTests {
     @Autowired
     lateinit var mvc: MockMvc
 
+    @AfterEach
+    fun clearDBEntries(){
+        repository.deleteAll()
+    }
     @Test
     fun givenStore_whenGetStores_thenStatus200() {
         repository.save(Store().apply { name = "Store Test" })
@@ -109,7 +114,7 @@ class AcmeApplicationTests {
 
     @Test
     fun withStore_whenUpdateExistingStore_thenStatus200() {
-        val store = Store().apply { id = 1; name = "Store 1" }
+        val store = Store().apply { name = "Store 1" }
         repository.save(store)
         mvc.perform(
             put("/api/updateStore")
@@ -122,7 +127,7 @@ class AcmeApplicationTests {
 
     @Test
     fun withStore_whenUpdateWithBadJson_thenStatus400() {
-        val store = Store().apply { id = 1; name = "Store 1" }
+        val store = Store().apply { name = "Store 1" }
         repository.save(store)
         mvc.perform(
             put("/api/updateStore")

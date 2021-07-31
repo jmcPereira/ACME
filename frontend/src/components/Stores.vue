@@ -5,7 +5,7 @@
       <div style="text-align: center" class="m-3" v-cloak>
         <p v-if="stores.length > 0">showing {{ stores.length }} items</p>
         <p v-if="!dataIsAvailable">Server side data is not ready yet. Should auto refresh soon!</p>
-        <a v-if="dataIsAvailable" href="/api/csv">Download information as CSV</a>
+        <a v-if="dataIsAvailable" href="/api/acme.csv">Download information as CSV</a>
       </div>
       <div style="padding-bottom: 20px" v-if="dataIsAvailable && stores" class="d-flex justify-content-center">
         <v-pagination
@@ -169,7 +169,7 @@ export default {
   created() {
     this.isDataAvailable()
         .then(result => {
-          if (result == "true") {
+          if (result) {
             this.fetchStoresPage(this.page)
           } else {
             const interval = setInterval(function () {

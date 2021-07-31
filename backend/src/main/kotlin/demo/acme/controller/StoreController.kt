@@ -56,7 +56,7 @@ class StoreController {
     }
 
     @RequestMapping(
-        value = ["/api/csv"],
+        value = ["/api/acme.csv"],
         method = [RequestMethod.GET],
         produces = [MediaType.APPLICATION_OCTET_STREAM_VALUE]
     )
