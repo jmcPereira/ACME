@@ -17,10 +17,12 @@ import java.io.FileWriter
 import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.system.measureTimeMillis
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 @Component
 class UpdateStoreInformationSchedule {
-
+    private val logger: Logger = LoggerFactory.getLogger(this.javaClass)
     var csvFilePath: String? = null
 
     @Autowired
@@ -54,13 +56,13 @@ class UpdateStoreInformationSchedule {
                     repository.deleteAll()
                     repository.saveAllAndFlush(stores.await().values)
                 }
-                println("Saved ${stores.await().size} new Store records in $timeToSaveRecords milliseconds.")
+                logger.info("Saved ${stores.await().size} new Store records in $timeToSaveRecords milliseconds.")
                 exportToCSV(stores.await().values)
             }
         }
-        println("Fetched data and updated DB in $elapsed milliseconds.")
+        logger.info("Fetched data and updated DB in $elapsed milliseconds.")
     } catch (e: Exception) {
-        println(e.message)
+        logger.error("Error thrown while fetching data.", e)
     }
 
     fun exportToCSV(stores: Collection<Store>) = try {
@@ -96,8 +98,8 @@ class UpdateStoreInformationSchedule {
             }
             csvFilePath = file.toString()
         }
-        println("Exported database to .csv in $elapsed milliseconds.")
+        logger.info("Exported database to .csv in $elapsed milliseconds.")
     } catch (e: Exception) {
-        println(e.message)
+        logger.error("Error thrown while exporting data to CSV",e)
     }
 }

@@ -10,6 +10,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.io.BufferedReader
@@ -33,6 +34,8 @@ class DataFetchService {
     @Value("\${datafetchservice.maximumNumberOfFetchedPages:}")
     lateinit var maximumNumberOfFetchedPages:String
 
+    private val logger = LoggerFactory.getLogger(this.javaClass)
+
     fun fetchStoresPage(page: Int): List<Store>? {
         return fetchData("${sourceApiUrl}${storePagesEndpoint}?page=$page") {
             Klaxon().parseArray( it )
@@ -44,7 +47,7 @@ class DataFetchService {
         val elapsed = measureTimeMillis {
             result = fetchData("${sourceApiUrl}${storeSeasonEndpoint}") { Klaxon().parseArray(it) }
         }
-        println("Fetched ${result?.size} store season entries in $elapsed milliseconds.")
+        logger.info("Fetched ${result?.size} store season entries in $elapsed milliseconds.")
         return result
     }
 
@@ -63,7 +66,7 @@ class DataFetchService {
                 associate
             }
         }
-        println("Fetched ${result?.keys?.size} csv entries in $elapsed milliseconds.")
+        logger.info("Fetched ${result?.keys?.size} csv entries in $elapsed milliseconds.")
         return result
     }
 
@@ -85,7 +88,7 @@ class DataFetchService {
                     break
             }
         }
-        println("Fetched ${stores.size} store entries in $elapsed milliseconds.")
+        logger.info("Fetched ${stores.size} store entries in $elapsed milliseconds.")
         return stores
     }
 
@@ -100,7 +103,7 @@ class DataFetchService {
                     }
             }
         } catch (e: Exception) {
-            println(e.message)
+            logger.error("Error while fetching data from '$url'", e)
         }
         return null
     }
