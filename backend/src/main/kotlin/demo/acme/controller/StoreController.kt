@@ -17,6 +17,9 @@ import java.io.File
 import java.io.FileInputStream
 
 
+
+
+
 @RestController
 class StoreController {
     @Autowired
@@ -40,18 +43,10 @@ class StoreController {
     }
 
     @PutMapping("/api/updateStore")
-    fun updateStore(@RequestBody storeAsJson: String): String {
-        var store: Store? = null
-        try {
-            store = Klaxon().parse<Store>(storeAsJson)
-        } catch (e: Exception) {
-        }
-        if (store == null)
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Couldn't match request body to json of Store object")
+   fun updateStore(@RequestBody store: Store): String {
         val storeToUpdate = repository.findById(store.id).orElse(null)
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Store ID does not exist!")
-        storeToUpdate.name = store.name
-        repository.saveAndFlush(storeToUpdate)
+        repository.saveAndFlush(storeToUpdate.apply { name = store.name })
         return "updated"
     }
 

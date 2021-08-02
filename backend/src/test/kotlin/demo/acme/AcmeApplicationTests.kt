@@ -118,6 +118,7 @@ class AcmeApplicationTests {
         repository.save(store)
         mvc.perform(
             put("/api/updateStore")
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(Klaxon().toJsonString(store.apply { name = "New name" }))
         )
             .andExpect(status().isOk)
@@ -131,10 +132,10 @@ class AcmeApplicationTests {
         repository.save(store)
         mvc.perform(
             put("/api/updateStore")
+                .contentType(MediaType.APPLICATION_JSON)
                 .content("Not JSON!")
         )
             .andExpect(status().isBadRequest)
-            .andExpect(status().reason(containsString("Couldn't match request body to json of Store object")))
         assert(repository.findById(store.id).get().name == "Store 1")
     }
 
@@ -142,6 +143,7 @@ class AcmeApplicationTests {
     fun withoutStore_whenUpdate_thenStatus404() {
         mvc.perform(
             put("/api/updateStore")
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(Klaxon().toJsonString(Store().apply { name = "Some name" }))
         )
             .andExpect(status().isNotFound)
