@@ -10,9 +10,9 @@ data class Store(
     var name:String, 
     var openingDate: String,
     var storeType: String,
-    @OneToMany(cascade = [CascadeType.ALL]) var seasons:MutableList<Season>,
+    @OneToMany(cascade = [CascadeType.ALL]) var seasons:MutableSet<Season>,
     @OneToOne(cascade = [CascadeType.ALL]) var additionalInfo:CsvEntry?) {
-    constructor() : this(0, "", "", "", "", "", mutableListOf(), null)
+    constructor() : this(0, "", "", "", "", "", mutableSetOf(), null)
 }
 
 data class StoreAndSeason(var storeId:Long, var season:String?){
@@ -20,7 +20,7 @@ data class StoreAndSeason(var storeId:Long, var season:String?){
 }
 
 @Entity
-data class Season(@Id @GeneratedValue(strategy=GenerationType.AUTO)var Long: Int, var season:String?){
+data class Season(@Id @GeneratedValue(strategy=GenerationType.AUTO)var id: Int, var season:String?){
     constructor() : this(0,null)
 }
 
