@@ -105,8 +105,8 @@ class DataFetchService {
                                 return bufferReaderHandler(it)
                             }
                         }
-                        500 -> {
-                            logger.info("Requesting store information from $url resulted in status 500. Retrying, attempt ${attempts++}/5.")
+                        else -> {
+                            logger.info("Requesting store information from $url resulted in status $responseCode. Retrying, attempt ${attempts++}/5.")
                         }
                     }
                 }
