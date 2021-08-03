@@ -94,16 +94,26 @@ class DataFetchService {
 
     fun <T> fetchData(url: String, bufferReaderHandler: (BufferedReader) -> T): T? {
         try {
-            with(URL(url).openConnection() as HttpURLConnection) {
-                requestMethod = "GET"
-                setRequestProperty("apiKey", apiKey)
-                if (responseCode == 200)
-                    inputStream.bufferedReader().use {
-                        return bufferReaderHandler(it)
+            var attempts = 1
+            while (attempts < 6)
+                with(URL(url).openConnection() as HttpURLConnection) {
+                    requestMethod = "GET"
+                    setRequestProperty("apiKey", apiKey)
+                    when(responseCode){
+                        200 -> {
+                            inputStream.bufferedReader().use {
+                                return bufferReaderHandler(it)
+                            }
+                        }
+                        500 -> {
+                            logger.info("Requesting store information from $url resulted in status 500. Retrying, attempt ${attempts++}/5.")
+                        }
                     }
-            }
+                }
+            if(attempts == 6)
+                logger.error("Failed to retrieve data from $url after 5 attempts. Giving up.")
         } catch (e: Exception) {
-            logger.error("Error while fetching data from '$url'", e)
+            logger.error("Exception thrown while fetching data from '$url'", e)
         }
         return null
     }
