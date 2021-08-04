@@ -138,7 +138,7 @@ export default {
     },
     fetchStoresPage: function (page) {
       this.stores = []
-      fetch(`/api/getStores?page=${page - 1}&storeNameFilter=${encodeURIComponent(this.nameFilter)}`)
+      fetch(`http://localhost:3000/api/getStores?page=${page - 1}&storeNameFilter=${encodeURIComponent(this.nameFilter)}`)
           .then(response => response.json())
           .then(data => {
             this.stores = data.storesPage;
@@ -147,11 +147,11 @@ export default {
           });
     },
     update: function (store) {
-      fetch(`/api/updateStore`, {method: 'PUT', body: JSON.stringify(store)})
+      fetch(`http://localhost:3000/api/updateStore`, {method: 'PUT', body: JSON.stringify(store)})
           .then(response => console.log(response.text()))
     },
     isDataAvailable: async function () {
-      let result = await (await fetch(`/api/isDataAvailable`)).text() == "true";
+      let result = await (await fetch(`http://localhost:3000/api/isDataAvailable`)).text() == "true";
       this.dataIsAvailable = result;
       return result;
     }

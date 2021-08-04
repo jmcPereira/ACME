@@ -17,9 +17,6 @@ import java.io.File
 import java.io.FileInputStream
 
 
-
-
-
 @RestController
 class StoreController {
     @Autowired
@@ -28,6 +25,7 @@ class StoreController {
     @Autowired
     private lateinit var repository: StoreRepository
 
+    @CrossOrigin(origins = ["http://localhost:8080"])
     @GetMapping("/api/getStores", produces = [MediaType.APPLICATION_JSON_VALUE])
     fun getStores(@RequestParam page: Int, @RequestParam(required = false) storeNameFilter: String?): String {
         val pageSize = 20
@@ -42,14 +40,16 @@ class StoreController {
             })
     }
 
+    @CrossOrigin(origins = ["http://localhost:8080"])
     @PutMapping("/api/updateStore")
-   fun updateStore(@RequestBody store: Store): String {
+    fun updateStore(@RequestBody store: Store): String {
         val storeToUpdate = repository.findById(store.id).orElse(null)
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Store ID does not exist!")
         repository.saveAndFlush(storeToUpdate.apply { name = store.name })
         return "updated"
     }
 
+    @CrossOrigin(origins = ["http://localhost:8080"])
     @RequestMapping(
         value = ["/api/acme.csv"],
         method = [RequestMethod.GET],
@@ -67,7 +67,7 @@ class StoreController {
             .contentType(MediaType.APPLICATION_OCTET_STREAM)
             .body(resource)
     }
-
+    @CrossOrigin(origins = ["http://localhost:8080"])
     @GetMapping("/api/isDataAvailable")
     fun isDataAvailable(): Boolean {
         return updateStoreInformationSchedule.csvFilePath != null && repository.count() > 0
