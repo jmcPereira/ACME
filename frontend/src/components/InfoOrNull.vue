@@ -1,11 +1,20 @@
 <template>
     <slot v-if="condition"></slot>
-    <p style="overflow-wrap: break-word; text-align: center" v-else>NULL</p>
+    <p class="null-info" v-else>NULL</p>
 </template>
 
 <script lang="ts">
-export default {
-  name: 'InfoOrNull',
+import {Options, Vue} from 'vue-class-component'
+@Options({
   props : ['condition']
+})
+export default class InfoOrNull extends Vue{
+  condition = false;
 }
 </script>
+
+<style scoped>
+.null-info{
+  overflow-wrap: break-word; text-align: center
+}
+</style>
