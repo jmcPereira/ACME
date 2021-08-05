@@ -73,19 +73,17 @@ export default class Stores extends Vue {
           if (result) {
             this.fetchStoresPage(this.page);
           } else {
-            const interval = setInterval((function (self) {
-              return function () {
-                self.isDataAvailable()
+            const interval = setInterval(() => {
+                this.isDataAvailable()
                     .then((isAvailable: boolean) => {
                       if (isAvailable) {
-                        self.fetchStoresPage(self.page);
+                        this.fetchStoresPage(this.page);
                         clearInterval(interval);
                       }
                     });
-              }
-            })(this).bind(this), 5000);
+              }, 5000);
           }
-        })
+        });
   }
 
   resetFilter() {
