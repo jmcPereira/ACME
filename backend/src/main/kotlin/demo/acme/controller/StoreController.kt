@@ -41,7 +41,7 @@ class StoreController {
     }
 
     @CrossOrigin(origins = ["http://localhost:8080"])
-    @PutMapping("/api/updateStore")
+    @PutMapping("/api/updateStore", consumes = ["application/json"])
     fun updateStore(@RequestBody store: Store): String {
         val storeToUpdate = repository.findById(store.id).orElse(null)
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Store ID does not exist!")

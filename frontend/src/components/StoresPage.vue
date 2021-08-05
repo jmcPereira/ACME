@@ -30,7 +30,7 @@
       <info-or-null :condition="s.storeType">{{ s.storeType }}</info-or-null>
     </td>
     <td class="col-1">
-      <info-or-null :condition="hasSeasons(s)">
+      <info-or-null :condition="s.seasons.length">
         <ul>
           <li v-for="season in s.seasons" :key="season.id">
             {{ season.season }}
@@ -70,16 +70,12 @@ import ReadMore from "@/components/ReadMore.vue";
 export default class StoresPage extends Vue {
   stores = new Array<Store>();
 
-  hasSeasons(store: Store) {
-    return Array.isArray(store.seasons) && store.seasons.length;
-  }
-
   hasAdditionalInformation(store: Store) {
     return store.additionalInfo && (store.additionalInfo.specialField1 || store.additionalInfo.specialField2);
   }
 
   update(store: Store) {
-    fetch(`http://localhost:3000/api/updateStore`, {method: 'PUT', body: JSON.stringify(store)})
+    fetch(`http://localhost:3000/api/updateStore`, {method: 'PUT', body: JSON.stringify(store), headers:{'Content-Type' : 'application/json'}})
         .then(response => console.log(response.text()));
   }
 }

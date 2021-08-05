@@ -1,12 +1,12 @@
 export default interface Store {
     id: number;
-    name: string;
     code: string;
     description: string;
-    storeType: string;
+    name: string;
     openingDate: string;
-    additionalInfo: {specialField1: string, specialField2: string};
+    storeType: string;
     seasons: Season[];
+    additionalInfo: {specialField1: string, specialField2: string};
 }
 
 interface Season{
