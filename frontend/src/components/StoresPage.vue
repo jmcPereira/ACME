@@ -68,7 +68,7 @@ import ReadMore from "@/components/ReadMore.vue";
   }
 })
 export default class StoresPage extends Vue {
-  stores: Array<Store>;
+  stores = new Array<Store>();
 
   hasSeasons(store: Store) {
     return Array.isArray(store.seasons) && store.seasons.length;

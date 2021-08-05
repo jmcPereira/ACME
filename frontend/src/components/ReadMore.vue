@@ -14,7 +14,7 @@ import {Vue, Options} from 'vue-class-component';
   props: ['description']
 })
 export default class ReadMore extends Vue{
-  description: string;
+  description = "";
   isActive = false;
   flip(){
     this.isActive = !this.isActive;

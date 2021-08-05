@@ -2,21 +2,22 @@
   <div class="container">
     <div class="store-table card mt-5">
       <h2 class="card-header text-center">Store Information</h2>
-      <div class="store-table-header m-3" v-cloak>
-        <p v-if="stores.length > 0">showing {{ stores.length }} items</p>
+      <div class="store-table-header m-3">
         <p v-if="!dataIsAvailable">Server side data is not ready yet. Should auto refresh soon!</p>
-        <a v-else href="http://localhost:3000/api/acme.csv">Download information as CSV</a>
+        <div v-else>
+          <div class="d-flex justify-content-center">
+            <v-pagination
+                v-model="page"
+                :pages="numberOfPages"
+                :range-size="0"
+                active-color="#DCEDFF"
+                @update:modelValue="updatePageHandler"/>
+          </div>
+          <p>showing {{ stores.length }} items</p>
+          <a href="http://localhost:3000/api/acme.csv">Download information as CSV</a>
+        </div>
       </div>
-      <div v-if="dataIsAvailable && stores" class="d-flex justify-content-center">
-        <v-pagination
-            v-model="page"
-            :pages="numberOfPages"
-            :range-size="0"
-            active-color="#DCEDFF"
-            @update:modelValue="updatePageHandler"
-        />
-      </div>
-      <table v-if="dataIsAvailable" class="table table-striped">
+      <table v-if="dataIsAvailable" class="table table-striped" v-cloak>
         <thead class="thead-light text-center">
         <tr>
           <th>Store Id</th>
@@ -119,7 +120,8 @@ export default class Stores extends Vue {
 .Page {
   padding: 15px;
 }
-.Pagination{
+
+.Pagination {
   padding-bottom: 15px;
 }
 </style>
